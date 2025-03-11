@@ -1,32 +1,37 @@
+--Melffy Call to Play
 local s,id,o=GetID()
 function s.initial_effect(c)
-	--Cannot be target
 	local e1=Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_FIELD)
-	e1:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
-	e1:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
-	e1:SetRange(LOCATION_SZONE)
-	e1:SetTargetRange(LOCATION_SZONE,0)
-	e1:SetValue(s.atlimit)
+	e1:SetType(EFFECT_TYPE_ACTIVATE)
+	e1:SetCode(EVENT_FREE_CHAIN)
 	c:RegisterEffect(e1)
+	--Cannot be target
 	local e2=Effect.CreateEffect(c)
-	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
-	e2:SetType(EFFECT_TYPE_IGNITION)
+	e2:SetType(EFFECT_TYPE_FIELD)
+	e2:SetCode(EFFECT_CANNOT_BE_EFFECT_TARGET)
+	e2:SetProperty(EFFECT_FLAG_IGNORE_IMMUNE)
 	e2:SetRange(LOCATION_SZONE)
-	e2:SetCountLimit(1,id)
-	e2:SetCost(s.cost)
-	e2:SetTarget(s.target)
-	e2:SetOperation(s.operation)
+	e2:SetTargetRange(LOCATION_MZONE,0)
+	e2:SetTarget(aux.TargetBoolFunction(Card.IsRace,RACE_BEAST))
+	e2:SetValue(aux.tgoval)
 	c:RegisterEffect(e2)
+	local e3=Effect.CreateEffect(c)
+	e3:SetCategory(CATEGORY_SPECIAL_SUMMON)
+	e3:SetType(EFFECT_TYPE_IGNITION)
+	e3:SetRange(LOCATION_SZONE)
+	e3:SetCountLimit(1,id+o)
+	e3:SetCost(s.cost)
+	e3:SetTarget(s.target)
+	e3:SetOperation(s.operation)
+	c:RegisterEffect(e3)
 end
-function s.atlimit(e,c)
-	return c~=e:GetHandler() and c:IsFaceup() and c:IsRace(RACE_BEAST)
-end
+
 function s.cfilter(c,tp)
-	return not c:IsPublic() and c:IsSetCard(0x146) and Duel.IsExistingMatchingCard(s.cfilter2,tp,LOCATION_DECK,0,1,nil,c)
+	return not c:IsPublic() and c:IsSetCard(0x146) and Duel.IsExistingMatchingCard(s.cfilter2,tp,LOCATION_DECK,0,1,nil,c) and c:IsType(TYPE_MONSTER)
 end
+--kdsjhfb--
 function s.cfilter2(c,oc)
-	return not c:IsCode(oc:GetCode()) and c:IsCanBeSpecialSummoned(e,0,tp,false,false) and c:IsSetCard(0x146) and c:IsType(TYPE_MONSTER)
+	return not c:IsCode(oc:GetCode()) and c:IsSetCard(0x146) and c:IsType(TYPE_MONSTER)
 end
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
@@ -48,10 +53,11 @@ function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
 end
 function s.operation(e,tp,eg,ep,ev,re,r,rp)
-	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
+	local tc=e:GetLabelObject()
+	if not tc:IsRelateToEffect(e) then return end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,1,nil,e,tp)
-	if g:GetCount()>0 then
+	local g=Duel.SelectMatchingCard(tp,s.cfilter2,tp,LOCATION_DECK,0,1,1,nil,tc)
+	if #g>0 then
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end
