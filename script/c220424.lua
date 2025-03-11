@@ -27,13 +27,13 @@ function s.mfilter(c)
 	return c:IsAttribute(ATTRIBUTE_LIGHT)
 end
 function s.cfilter(c,tp)
-	return c:IsAttribute(ATTRIBUTE_LIGHT) and Duel.IsExistingMatchingCard(s.cfilter2,tp,LOCATION_DECK,0,1,nil,c) and c:IsType(TYPE_MONSTER)
+	return c:IsAttribute(ATTRIBUTE_LIGHT) and Duel.IsExistingMatchingCard(s.cfilter2,tp,LOCATION_DECK,0,1,nil,c)
 end
 function s.cfilter2(c,oc)
-	return c:IsRace(oc:GetRace()) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand() and c:IsAttribute(ATTRIBUTE_LIGHT)
+	return c:IsRace(oc:GetRace()) and c:IsType(TYPE_MONSTER) and c:IsAbleToHand() and c:IsAttribute(ATTRIBUTE_LIGHT) and not c:IsCode(oc:GetCode())
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_HAND,0,1,nil,tp) end
+	if chk==0 then return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_HAND+LOCATION_GRAVE,0,1,nil,tp) end
 	Duel.SetOperationInfo(0,CATEGORY_REMOVE,nil,1,tp,LOCATION_HAND+LOCATION_GRAVE)
 	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,1,tp,LOCATION_DECK)
 end
