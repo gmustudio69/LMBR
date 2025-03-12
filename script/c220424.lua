@@ -3,7 +3,7 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	aux.AddCodeList(c,id)
 	--link summon
-	aux.AddLinkProcedure(c,s.mfilter,2,2)
+	aux.AddLinkProcedure(c,nil,2,2,s.lcheck)
 	c:EnableReviveLimit()
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
@@ -22,6 +22,9 @@ function s.initial_effect(c)
 	e2:SetTarget(s.target)
 	e2:SetOperation(s.operation)
 	c:RegisterEffect(e2)
+end
+function s.lcheck(g)
+	return g:IsExists(Card.IsLinkAttribute,1,nil,ATTRIBUTE_LIGHT)
 end
 function s.mfilter(c)
 	return c:IsAttribute(ATTRIBUTE_LIGHT)
