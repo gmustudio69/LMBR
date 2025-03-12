@@ -18,6 +18,15 @@ function s.initial_effect(c)
 	e2:SetTarget(s.tdtg)
 	e2:SetOperation(s.tdop)
 	c:RegisterEffect(e2)
+	if not s.global_check then
+		s.global_check=true
+		local ge1=Effect.CreateEffect(c)
+		ge1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
+		ge1:SetCode(EVENT_TO_HAND)
+		ge1:SetCondition(s.regcon)
+		ge1:SetOperation(s.regop)
+		Duel.RegisterEffect(ge1,0)
+	end
 	local e3=Effect.CreateEffect(c)
 	e3:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
 	e3:SetProperty(EFFECT_FLAG_DELAY)
@@ -35,6 +44,9 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 		return result
 	end
 	Duel.SetTargetPlayer(tp)
+end
+function s.regop(e,tp,eg,ep,ev,re,r,rp)
+	Duel.RaiseEvent(eg,EVENT_CUSTOM+94145021,re,r,rp,ep,e:GetLabel())
 end
 function s.tdfilter(c)
 	return c:GetType()==TYPE_SPELL
@@ -58,6 +70,21 @@ function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 		local mg=Duel.GetDecktopGroup(p,1)
 		Duel.MoveSequence(mg:GetFirst(),SEQ_DECKBOTTOM)
 	end
+	local e1=Effect.CreateEffect(e:GetHandler())
+	e1:SetType(EFFECT_TYPE_FIELD)
+	e1:SetCode(EFFECT_CANNOT_TO_HAND)
+	e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e1:SetTargetRange(1,1)
+	e1:SetTarget(aux.TargetBoolFunction(Card.IsLocation,LOCATION_DECK))
+	e1:SetReset(RESET_PHASE+PHASE_END)
+	Duel.RegisterEffect(e1,tp)
+	local e2=Effect.CreateEffect(e:GetHandler())
+	e2:SetType(EFFECT_TYPE_FIELD)
+	e2:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+	e2:SetCode(EFFECT_CANNOT_DRAW)
+	e2:SetReset(RESET_PHASE+PHASE_END)
+	e2:SetTargetRange(1,1)
+	Duel.RegisterEffect(e2,tp)
 end
 function s.setfilter(c)
 	return c:IsSetCard(0xf86) and c:IsType(TYPE_TRAP) and c:IsSSetable()
