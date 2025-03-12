@@ -72,9 +72,9 @@ function s.tgop(e,tp,eg,ep,ev,re,r,rp)
 end
 function s.negtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chkc then return chkc:IsOnField() and aux.NegateAnyFilter(chkc) end
-	if chk==0 then return Duel.IsExistingTarget(aux.NegateAnyFilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
+	if chk==0 then return Duel.IsExistingTarget(aux.NegateMonsterFilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DISABLE)
-	local g=Duel.SelectTarget(tp,aux.NegateAnyFilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
+	local g=Duel.SelectTarget(tp,aux.NegateMonsterFilter,tp,LOCATION_MZONE,LOCATION_MZONE,1,1,nil)
 	Duel.SetOperationInfo(0,CATEGORY_DISABLE,g,1,0,0)
 end
 function s.negop(e,tp,eg,ep,ev,re,r,rp)
