@@ -46,11 +46,8 @@ function s.thcon2(e,tp,eg,ep,ev,re,r,rp)
 end
 function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
-	local g=Duel.GetMatchingGroup(s.thfilter,tp,LOCATION_DECK,0,nil)
-	if chk==0 then return c:IsAbleToHand() and g:GetClassCount(Card.GetCode)>=2 end
-
-	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
-	Duel.SetOperationInfo(0,CATEGORY_TOHAND,nil,2,tp,LOCATION_DECK)
+	if chk==0 then return c:IsAbleToHand() end
+	Duel.SetOperationInfo(0,CATEGORY_TOHAND,c,2,0,0)
 end
 function s.thfilter(c)
 	return c:IsSetCard(0x146) and c:IsType(TYPE_MONSTER) and not c:IsCode(id) and c:IsAbleToHand()
