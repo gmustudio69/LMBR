@@ -51,11 +51,11 @@ function s.tdfilter(c)
 end
 function s.tdop(e,tp,eg,ep,ev,re,r,rp)
 	local p=Duel.GetChainInfo(0,CHAININFO_TARGET_PLAYER)
-	Duel.ConfirmDecktop(p,3)
-	local g=Duel.GetDecktopGroup(p,3)
-	if not g or #g<3 then return end
+	Duel.ConfirmDecktop(p,5)
+	local g=Duel.GetDecktopGroup(p,5)
+	if not g or #g<5 then return end
 	g=g:Filter(s.tdfilter,nil)
-	local ct=3
+	local ct=5
 	if #g>0 and Duel.SelectYesNo(p,aux.Stringid(id,0)) then
 		Duel.Hint(HINT_SELECTMSG,p,HINTMSG_TOGRAVE)
 		local sg=g:Select(p,1,1,nil)

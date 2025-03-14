@@ -50,7 +50,7 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp,c)
 	Duel.SendtoGrave(g,REASON_COST+REASON_DISCARD)
 end
 function s.filter(c)
-	return c:IsSetCard(0xf86) and c:IsType(TYPE_SPELL+TYPE_TRAP) and c:IsSSetable()
+	return c:IsSetCard(0xf86) and c:IsType(TYPE_SPELL) and c:IsSSetable()
 end
 function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,nil) end
@@ -84,6 +84,6 @@ function s.plop(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetProperty(EFFECT_FLAG_CANNOT_DISABLE)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD-RESET_TURN_SET)
 		e1:SetValue(TYPE_SPELL+TYPE_CONTINUOUS)
-		tc:RegisterEffect(e1)
+		c:RegisterEffect(e1)
 	end
 end

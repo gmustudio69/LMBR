@@ -7,5 +7,5 @@ function s.initial_effect(c)
 	c:EnableReviveLimit()
 end
 function s.mfilter(c)
-	return c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsLinkRace(RACE_PSYCHO)
+	return c:IsLevelBelow(4) and c:IsLinkRace(RACE_PSYCHO)
 end
