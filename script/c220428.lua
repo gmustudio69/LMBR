@@ -29,6 +29,23 @@ function s.initial_effect(c)
 	e3:SetTarget(s.sptg)
 	e3:SetOperation(s.spop)
 	c:RegisterEffect(e3)
+	local e4=Effect.CreateEffect(c)
+	e4:SetDescription(aux.Stringid(id,1))
+	e4:SetCategory(CATEGORY_DESTROY)
+	e4:SetType(EFFECT_TYPE_IGNITION)
+	e4:SetProperty(EFFECT_FLAG_CARD_TARGET)
+	e4:SetRange(LOCATION_MZONE)
+	e4:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_END_PHASE)
+	e4:SetCost(s.descost2)
+	e4:SetTarget(s.destg2)
+	e4:SetOperation(s.desop2)
+	c:RegisterEffect(e4)
+	local e5=e4:Clone()
+	e5:SetType(EFFECT_TYPE_QUICK_O)
+	e5:SetCountLimit(1,id+o)
+	e5:SetCondition(s.qcon)
+	e5:SetCode(EVENT_FREE_CHAIN)
+	c:RegisterEffect(e5)
 	Duel.AddCustomActivityCounter(id,ACTIVITY_CHAIN,s.chainfilter)
 end
 function s.chainfilter(re,tp,cid)
@@ -68,7 +85,8 @@ end
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
 	local e1=Effect.CreateEffect(e:GetHandler())
 	e1:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
-	e1:SetCode(EVENT_PHASE+PHASE_MAIN2)
+	e1:SetCode(EVENT_PHASE+PHASE_BATTLE)
+	e1:SetHintTiming(TIMING_BATTLE_END)
 	e1:SetCountLimit(1)
 	e1:SetOperation(s.spop1)
 	e1:SetReset(RESET_PHASE+PHASE_END)
@@ -78,4 +96,29 @@ function s.spop1(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
 	Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)
+end
+
+function s.descost2(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return e:GetHandler():CheckRemoveOverlayCard(tp,1,REASON_COST) end
+	e:GetHandler():RemoveOverlayCard(tp,1,1,REASON_COST)
+end
+function s.destg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
+	if chkc then return chkc:IsOnField() and chkc:IsFaceup() end
+	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
+	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
+	local g=Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
+	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
+end
+function s.desop2(e,tp,eg,ep,ev,re,r,rp)
+	local tc=Duel.GetFirstTarget()
+	if tc:IsRelateToEffect(e) then
+		Duel.Destroy(tc,REASON_EFFECT)
+	end
+end
+function s.sprfilter(c)
+	return c:IsFaceup() and c:IsCode(220405)
+end
+function s.qcon(e,tp,eg,ep,ev,re,r,rp)
+	return Duel.IsExistingMatchingCard(s.sprfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
