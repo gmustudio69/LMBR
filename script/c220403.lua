@@ -1,6 +1,5 @@
 --Aerys, The Limit Breaker
 local s,id,o=GetID()
---ダイナレスラー・パンクラトプス
 function s.initial_effect(c)
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_SINGLE)
@@ -13,7 +12,6 @@ function s.initial_effect(c)
 	e2:SetDescription(aux.Stringid(id,0))
 	e2:SetCategory(CATEGORY_TOGRAVE)
 	e2:SetType(EFFECT_TYPE_IGNITION)
-	e2:SetCountLimit(1)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetTarget(s.tdtg)
 	e2:SetOperation(s.tdop)
@@ -46,7 +44,7 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	Duel.SetTargetPlayer(tp)
 end
 function s.regop(e,tp,eg,ep,ev,re,r,rp)
-	Duel.RaiseEvent(eg,EVENT_CUSTOM+94145021,re,r,rp,ep,e:GetLabel())
+	Duel.RaiseEvent(eg,EVENT_CUSTOM+id,re,r,rp,ep,e:GetLabel())
 end
 function s.tdfilter(c)
 	return c:GetType()==TYPE_SPELL

@@ -17,8 +17,7 @@ end
 function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local rc=c:GetReasonCard()
-	return c:IsLocation(LOCATION_GRAVE) and r==REASON_LINK
-		and rc:IsRace(RACE_PSYCHO) and rc:IsAttribute(ATTRIBUTE_LIGHT)
+	return c:IsLocation(LOCATION_GRAVE) and r==REASON_LINK and rc:IsRace(RACE_PSYCHO) and rc:IsAttribute(ATTRIBUTE_LIGHT)
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
