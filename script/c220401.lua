@@ -50,7 +50,7 @@ function s.spfilter(c,e,tp)
 end
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	c=e:GetHandler()
-	if chk==0 then return e:GetHandler():IsAbleToExtraAsCost() end
+	if chk==0 then return c:IsAbleToExtraAsCost() end
 	Duel.SendtoDeck(c,nil,SEQ_DECKSHUFFLE,REASON_COST)
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)   

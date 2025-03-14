@@ -93,7 +93,7 @@ function s.qcon(e,tp,eg,ep,ev,re,r,rp)
 	return Duel.IsExistingMatchingCard(s.sprfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
 function s.filter(c,e)
-	return c:GetType()==TYPE_SPELL and c:IsAbleToRemove() and c:CheckActivateEffect(true,true,true)~=nil 
+	return c:GetType()==TYPE_SPELL and c:IsAbleToRemove() and c:CheckActivateEffect(true,true,false)~=nil 
 end
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
@@ -102,25 +102,27 @@ function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 function s.cptg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_GRAVE) and s.filter(chkc) end
-	if chk==0 then return Duel.IsExistingTarget(s.filter,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,nil) end
+	if chk==0 then return Duel.IsExistingTarget(s.filter,tp,LOCATION_GRAVE,0,1,nil) end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_REMOVE)
-	local g=Duel.SelectTarget(tp,s.filter,tp,LOCATION_GRAVE,LOCATION_GRAVE,1,1,nil)
+	local g=Duel.SelectTarget(tp,s.filter,tp,LOCATION_GRAVE,0,1,1,nil)
 	local te,ceg,cep,cev,cre,cr,crp=g:GetFirst():CheckActivateEffect(true,true,true)
-	e:SetProperty(te:GetProperty())
+	Duel.ClearTargetCard()
+	g:GetFirst():CreateEffectRelation(e)
 	local tg=te:GetTarget()
+	e:SetProperty(te:GetProperty())
 	if tg then tg(e,tp,ceg,cep,cev,cre,cr,crp,1) end
 	te:SetLabelObject(e:GetLabelObject())
 	e:SetLabelObject(te)
 	Duel.ClearOperationInfo(0)
-	Duel.SetOperationInfo(0,CATEGORY_REMOVE,g,1,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_REMOVE,e:GetLabelObject(),1,0,0)
 end
 function s.cpop(e,tp,eg,ep,ev,re,r,rp)
-	local tc=Duel.GetFirstTarget()
 	local te=e:GetLabelObject()
-	if tc and tc:IsRelateToEffect(e) and Duel.Remove(tc,POS_FACEUP,REASON_EFFECT)>0
-		and tc:IsLocation(LOCATION_REMOVED) and te then
-		e:SetLabelObject(te:GetLabelObject())
-		local op=te:GetOperation()
-		if op then op(e,tp,eg,ep,ev,re,r,rp) end
-	end
+	if not te then return end
+	local tc=te:GetHandler()
+	if not (tc:IsRelateToEffect(e) and tc:GetType()==TYPE_SPELL) then return end
+	e:SetLabelObject(te:GetLabelObject())
+	local op=te:GetOperation()
+	if op and Duel.Remove(tc,POS_FACEDOWN,REASON_EFFECT)~=0 then op(e,tp,eg,ep,ev,re,r,rp) end
+	
 end

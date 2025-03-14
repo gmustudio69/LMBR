@@ -15,8 +15,7 @@ function s.initial_effect(c)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetCountLimit(1,id+o)
-	e2:SetCost(s.spcost)
-	e2:SetOperation(s.sptg)
+	e2:SetTarget(s.sptg)
 	e2:SetOperation(s.spop)
 	c:RegisterEffect(e2)
 end
@@ -24,10 +23,10 @@ function s.filter(c)
 	return c:IsSetCard(0xb67) and c:IsType(TYPE_MONSTER) and not c:IsForbidden()
 end
 function s.spfilter(c,tp)
-	return c:IsType(TYPE_XYZ) and c:IsRace(RACE_WARRIOR) and Duel.IsExistingMatchingCard(s.spfilter2,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,c)
+	return c:IsType(TYPE_XYZ) and c:IsSetCard(0xf86)
 end
-function s.spfilter2(c,oc)
-	return c:IsLevel(oc:GetRank()) and c:IsRace(RACE_WARRIOR) and c:IsType(TYPE_MONSTER)
+function s.spfilter2(c,tp)
+	return c:IsRace(RACE_WARRIOR) and c:IsType(TYPE_MONSTER) and c:IsSetCard(0xf86)
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,nil)
@@ -49,12 +48,6 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetValue(TYPE_SPELL+TYPE_CONTINUOUS)
 		tc:RegisterEffect(e1)
 	end
-end
-function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_MZONE+LOCATION_GRAVE,0,1,1,nil,tp)
-	if chk==0 then return g:IsAbleToExtraAsCost() end
-	Duel.SendtoDeck(c,nil,SEQ_DECKSHUFFLE,REASON_COST)
-	e:SetLabelObject(g:GetFirst())
 end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.spfilter2,tp,LOCATION_REMOVED+LOCATION_GRAVE,0,1,nil,e,tp) end
