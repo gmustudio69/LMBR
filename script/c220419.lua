@@ -53,7 +53,7 @@ function s.spcon(e,tp,eg,ep,ev,re,r,rp)
 end
 function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
 	c=e:GetHandler()
-	if chk==0 return not c:IsPublic() then end
+	if chk==0 then return not c:IsPublic() end
 	Duel.ConfirmCards(1-tp,c)
 	Duel.ShuffleHand(tp)
 end
