@@ -30,14 +30,24 @@ function s.initial_effect(c)
 	e3:SetTarget(s.negtg)
 	e3:SetOperation(s.negop)
 	c:RegisterEffect(e3)
+	local e4=e3:Clone()
+	e3:SetType(EFFECT_TYPE_QUICK_O)
+	e3:SetCountLimit(1,id+o*2)
+	e3:SetCondition(s.qcon)
+	e3:SetCode(EVENT_FREE_CHAIN)
+	c:RegisterEffect(e3)
 	Duel.AddCustomActivityCounter(id,ACTIVITY_CHAIN,s.chainfilter)
 end
 function s.chainfilter(re,tp,cid)
 	local rc=re:GetHandler()
 	return not rc:IsCode(220406)
 end
+
 function s.ovfilter(c)
-	return c:IsFaceup() and c:IsType(TYPE_MONSTER) and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_WARRIOR)
+	return c:IsFaceup()  and c:IsLevel(7) and c:IsType(TYPE_MONSTER) and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_WARRIOR)
+end
+function s.qcon(e,tp,eg,ep,ev,re,r,rp)
+	return Duel.IsExistingMatchingCard(s.sprfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
 function s.xyzop(e,tp,chk)
 	if chk==0 then return Duel.GetFlagEffect(tp,id)==0
