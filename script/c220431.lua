@@ -1,3 +1,4 @@
+
 local s,id,o=GetID()
 function s.initial_effect(c)
 	local e1=Effect.CreateEffect(c)
@@ -35,6 +36,7 @@ end
 function s.active(e,tp,eg,ep,ev,re,r,rp)
 	local c=e:GetHandler()
 	local tc=Duel.SelectMatchingCard(tp,nil,tp,0,LOCATION_ONFIELD,1,1,nil):GetFirst()
+	if tc then
 		Duel.Destroy(tc,REASON_EFFECT)
 	end
 end

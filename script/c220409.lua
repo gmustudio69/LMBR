@@ -14,10 +14,11 @@ function s.initial_effect(c)
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
-	e2:SetType(EFFECT_TYPE_IGNITION)
+	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetProperty(EFFECT_FLAG_CARD_TARGET)
 	e2:SetRange(LOCATION_MZONE)
 	e2:SetCountLimit(1,id+o*2)
+	e2:SetCondition(s.spcon)
 	e2:SetTarget(s.spstg)
 	e2:SetOperation(s.spsop)
 	c:RegisterEffect(e2)
@@ -51,10 +52,6 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 end
-function s.sfilter(c,e,tp)
-		return c:GetOriginalType()&TYPE_MONSTER>0 and c:GetType()&TYPE_CONTINUOUS+TYPE_SPELL==TYPE_CONTINUOUS+TYPE_SPELL
-		and c:IsFaceup()
-end
 function s.spstg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and s.sfilter(chkc,e,tp) end
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0
@@ -63,7 +60,13 @@ function s.spstg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	local g=Duel.SelectTarget(tp,s.sfilter,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil,e,tp)
 	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,g,1,0,0)
 end
+function s.spcon(e,tp,eg,ep,ev,re,r,rp)
+	local ph=Duel.GetCurrentPhase()
+	return ph==PHASE_MAIN1 or ph==PHASE_MAIN2
+end
 function s.spsop(e,tp,eg,ep,ev,re,r,rp)
 	local tc=Duel.GetFirstTarget()
-	if tc then Duel.SpecialSummon(tc,0,tp,tp,true,true,POS_FACEUP) end
+	if tc then 
+		Duel.SpecialSummon(tc,0,tp,tp,true,true,POS_FACEUP) 
+	end
 end
