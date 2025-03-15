@@ -21,11 +21,23 @@ function s.initial_effect(c)
 	e2:SetType(EFFECT_TYPE_QUICK_O)
 	e2:SetCode(EVENT_FREE_CHAIN)
 	e2:SetRange(LOCATION_SZONE)
-	e2:SetCountLimit(1,id+o)
+	e2:SetCountLimit(1,id+o*1)
 	e2:SetCost(s.xyzcost)
 	e2:SetTarget(s.xyztg)
 	e2:SetOperation(s.xyzop)
 	c:RegisterEffect(e2)
+	local e3=Effect.CreateEffect(c)
+	e3:SetDescription(aux.Stringid(id,1))
+	e3:SetCategory(CATEGORY_TODECK)
+	e3:SetType(EFFECT_TYPE_QUICK_O)
+	e3:SetCode(EVENT_FREE_CHAIN)
+	e3:SetRange(LOCATION_GRAVE)
+	e3:SetCountLimit(1,id+0*2)
+	e3:SetHintTiming(TIMING_END_PHASE)
+	e3:SetCondition(s.setcon)
+	e3:SetTarget(s.settg)
+	e3:SetOperation(s.setop)
+	c:RegisterEffect(e3)
 end
 function s.atlimit(e,c)
 	return c:IsFaceup() and c:IsRace(RACE_BEAST)
@@ -58,6 +70,32 @@ function s.xyzop(e,tp,eg,ep,ev,re,r,rp)
 		local tg=exg:Select(tp,1,1,nil)
 		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_XMATERIAL)
 		Duel.XyzSummon(tp,tg:GetFirst(),nil,1,nil)
+	end
+end
+
+function s.setcon(e,tp,eg,ep,ev,re,r,rp)
+	return Duel.GetCurrentPhase()==PHASE_END
+end
+function s.tdfilter(c)
+	return c:IsFaceupEx() and c:IsSetCard(0x146) and c:IsAbleToDeck()
+end
+function s.settg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return e:GetHandler():IsSSetable() and Duel.IsExistingMatchingCard(s.tdfilter,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,2,nil) end
+	Duel.SetOperationInfo(0,CATEGORY_LEAVE_GRAVE,e:GetHandler(),1,0,0)
+	Duel.SetOperationInfo(0,CATEGORY_TODECK,nil,2,tp,LOCATION_GRAVE+LOCATION_REMOVED)
+end
+function s.setop(e,tp,eg,ep,ev,re,r,rp)
+	local rg=Duel.GetMatchingGroup(aux.NecroValleyFilter(s.tdfilter),tp,LOCATION_GRAVE+LOCATION_REMOVED,0,nil)
+	if rg:GetCount()<2 then return end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_TODECK)
+	local sg=rg:Select(tp,2,2,nil)
+	if sg:GetCount()>0 then
+		Duel.HintSelection(sg)
+		local c=e:GetHandler()
+		if Duel.SendtoDeck(sg,nil,SEQ_DECKSHUFFLE,REASON_EFFECT) and sg:FilterCount(Card.IsLocation,nil,LOCATION_DECK+LOCATION_EXTRA)>0
+			and c:IsRelateToEffect(e) and aux.NecroValleyFilter()(c) then
+			Duel.SSet(tp,c)
+		end
 	end
 end
 
