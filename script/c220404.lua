@@ -34,7 +34,7 @@ function s.initial_effect(c)
 	e3:SetType(EFFECT_TYPE_QUICK_O)
 	e3:SetCountLimit(1,id+o*2)
 	e3:SetCondition(s.qcon)
-	e3:SetCode(EVENT_FREE_CHAIN)
+	e3:SetCode(EVENT_CHAINING)
 	c:RegisterEffect(e3)
 	Duel.AddCustomActivityCounter(id,ACTIVITY_CHAIN,s.chainfilter)
 end
@@ -47,7 +47,7 @@ function s.ovfilter(c)
 	return c:IsFaceup()  and c:IsLevel(7) and c:IsType(TYPE_MONSTER) and c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_WARRIOR)
 end
 function s.qcon(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.IsExistingMatchingCard(s.sprfilter,tp,LOCATION_ONFIELD,0,1,nil)
+	return rp==1-tp Duel.IsExistingMatchingCard(s.sprfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
 function s.xyzop(e,tp,chk)
 	if chk==0 then return Duel.GetFlagEffect(tp,id)==0

@@ -42,9 +42,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e4)
 	local e5=e4:Clone()
 	e5:SetType(EFFECT_TYPE_QUICK_O)
-	e5:SetCountLimit(1,id+o)
 	e5:SetCondition(s.qcon)
-	e5:SetCode(EVENT_FREE_CHAIN)
+	e5:SetCode(EVENT_CHAINING)
 	c:RegisterEffect(e5)
 	Duel.AddCustomActivityCounter(id,ACTIVITY_CHAIN,s.chainfilter)
 end
@@ -104,10 +103,10 @@ function s.descost2(e,tp,eg,ep,ev,re,r,rp,chk)
 end
 function s.destg2(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and chkc:IsFaceup() end
-	if chk==0 then return Duel.IsExistingTarget(Card.IsFaceup,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
+	if chk==0 then return Duel.IsExistingTarget(nil,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,nil) end
 	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription())
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_DESTROY)
-	local g=Duel.SelectTarget(tp,Card.IsFaceup,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
+	local g=Duel.SelectTarget(tp,nil,tp,LOCATION_ONFIELD,LOCATION_ONFIELD,1,1,nil)
 	Duel.SetOperationInfo(0,CATEGORY_DESTROY,g,1,0,0)
 end
 function s.desop2(e,tp,eg,ep,ev,re,r,rp)
@@ -120,5 +119,5 @@ function s.sprfilter(c)
 	return c:IsFaceup() and c:IsCode(220405)
 end
 function s.qcon(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.IsExistingMatchingCard(s.sprfilter,tp,LOCATION_ONFIELD,0,1,nil)
+	return rp==1-tp and Duel.IsExistingMatchingCard(s.sprfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end

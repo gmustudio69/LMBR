@@ -48,9 +48,8 @@ function s.initial_effect(c)
 	c:RegisterEffect(e5)
 	local e6=e5:Clone()
 	e6:SetType(EFFECT_TYPE_QUICK_O)
-	e6:SetCountLimit(1,id+o)
 	e6:SetCondition(s.qcon)
-	e6:SetCode(EVENT_FREE_CHAIN)
+	e6:SetCode(EVENT_CHAINING)
 	c:RegisterEffect(e6)
 	aux.RegisterMergedDelayedEvent(c,id,EVENT_REMOVE)
 end
@@ -90,7 +89,7 @@ function s.sprfilter(c)
 	return c:IsFaceup() and c:IsCode(220405)
 end
 function s.qcon(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.IsExistingMatchingCard(s.sprfilter,tp,LOCATION_ONFIELD,0,1,nil)
+	return rp==1-tp and Duel.IsExistingMatchingCard(s.sprfilter,tp,LOCATION_ONFIELD,0,1,nil)
 end
 function s.filter(c,e)
 	return c:GetType()==TYPE_SPELL and c:IsAbleToRemove() and c:CheckActivateEffect(true,true,false)~=nil 

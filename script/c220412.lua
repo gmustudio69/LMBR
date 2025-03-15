@@ -1,3 +1,5 @@
+--L:B World breaker
+
 local s,id,o=GetID()
 function s.initial_effect(c)
 	--xyz summon
@@ -41,8 +43,11 @@ end
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	local c=e:GetHandler()
 	local g=Duel.GetMatchingGroup(s.xyzfilter,tp,LOCATION_MZONE,0,nil)
-	if chk==0 then return Duel.CheckRemoveOverlayCard(tp,1,0,1,REASON_COST,g) end
-	Duel.RemoveOverlayCard(tp,1,0,1,1,REASON_COST,g)
+	if chk==0 then return Duel.IsExistingMatchingCard(s.xyzfilter,tp,LOCATION_MZONE,0,1,nil) end
+	local tc = Duel.SelectMatchingCard(tp,s.xyzfilter,tp,LOCATION_MZONE,0,1,1,nil):GetFirst()
+	if tc then
+		tc:RemoveOverlayCard(tp,1,1,REASON_COST)
+	end
 end
 function s.atkcon(e,tp,eg,ep,ev,re,r,rp)
 	local ac=Duel.GetBattleMonster(tp)

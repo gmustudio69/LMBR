@@ -42,9 +42,10 @@ function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return b1 or b2 end
 	if b1 then
 		if b2 and not Duel.SelectYesNo(tp,aux.Stringid(id,0)) then return end
-		local g=Duel.GetMatchingGroup(s.filter1,tp,LOCATION_MZONE,0,nil)
-		if Duel.CheckRemoveOverlayCard(tp,1,0,1,REASON_COST,g) then end
-		Duel.RemoveOverlayCard(tp,1,0,1,1,REASON_COST,g)
+		local tc = Duel.SelectMatchingCard(tp,s.filter1,tp,LOCATION_MZONE,0,1,1,nil):GetFirst()
+		if tc then
+			tc:RemoveOverlayCard(tp,1,1,REASON_COST)
+		end
 	end
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
