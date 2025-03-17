@@ -30,7 +30,7 @@ function s.filter1(c)
 	return c:IsSetCard(0xf86) and c:IsType(TYPE_XYZ) and c:GetOverlayCount()>0 and c:IsFaceup()
 end
 function s.filter2(c)
-	return c:IsType(TYPE_SYNCHRO) and C:IsLevel(13)
+	return c:IsType(TYPE_SYNCHRO) and c:IsLevel(13)
 end
 function s.condition(e,tp,eg,ep,ev,re,r,rp)
 	if not Duel.IsChainNegatable(ev) then return false end
@@ -64,7 +64,7 @@ function s.tgfilter(c,tp)
 	return c:IsFaceup()
 end
 function s.xyzfilter(c,atk)
-	return c:IsType(TYPE_XYZ) and c:IsAbleToGrave()
+	return (c:IsType(TYPE_XYZ) or c:IsSetCard(0xb67)) and c:IsAbleToGrave()
 end
 function s.atktg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsLocation(LOCATION_MZONE) and s.tgfilter(chkc,tp) end

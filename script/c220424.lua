@@ -3,7 +3,7 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	aux.AddCodeList(c,id)
 	--link summon
-	aux.AddLinkProcedure(c,nil,2,2,s.lcheck)
+	aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkAttribute,ATTRIBUTE_LIGHT),2,2)
 	c:EnableReviveLimit()
 	local e1=Effect.CreateEffect(c)
 	e1:SetType(EFFECT_TYPE_FIELD)
@@ -22,12 +22,6 @@ function s.initial_effect(c)
 	e2:SetTarget(s.target)
 	e2:SetOperation(s.operation)
 	c:RegisterEffect(e2)
-end
-function s.lcheck(g)
-	return g:IsExists(Card.IsLinkAttribute,1,nil,ATTRIBUTE_LIGHT)
-end
-function s.mfilter(c)
-	return c:IsAttribute(ATTRIBUTE_LIGHT)
 end
 function s.cfilter(c,tp)
 	return c:IsAttribute(ATTRIBUTE_LIGHT) and Duel.IsExistingMatchingCard(s.cfilter2,tp,LOCATION_DECK,0,1,nil,c)
