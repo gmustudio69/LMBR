@@ -3,7 +3,7 @@
 local s,id,o=GetID()
 function s.initial_effect(c)
 	-- Xyz Summon
-	aux.AddXyzProcedure(c,nil,12,5) -- 5 Level 12 monsters
+	aux.AddXyzProcedure(c,nil,12,4,nil,nil,99) -- 4+ Level 12 monsters
 	c:EnableReviveLimit()
 
 	--spsummon limit
@@ -18,7 +18,7 @@ function s.initial_effect(c)
 	local e1=Effect.CreateEffect(c)
 	e1:SetDescription(aux.Stringid(id,0))
 	e1:SetCategory(CATEGORY_NEGATE)
-	e1:SetType(EFFECT_TYPE_QUICK_O)
+	e1:SetType(EFFECT_TYPE_QUICK_F)
 	e1:SetCode(EVENT_CHAINING)
 	e1:SetProperty(EFFECT_FLAG_DAMAGE_STEP+EFFECT_FLAG_DAMAGE_CAL)
 	e1:SetRange(LOCATION_MZONE)
