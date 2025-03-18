@@ -39,9 +39,9 @@ function s.spcon(e,c)
 		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0) -- Có ô trống trên sân.
 end
 
--- Hàm lọc: kiểm tra lá bài hệ ánh sáng, tộc máy móc và có thể triệu hồi đặc biệt.
+-- Hàm lọc: kiểm tra lá bài hệ đất, tộc máy móc và có thể triệu hồi đặc biệt.
 function s.spfilter(c,e,tp)
-	return c:IsAttribute(ATTRIBUTE_LIGHT) and c:IsRace(RACE_MACHINE) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+	return c:IsAttribute(ATTRIBUTE_EARTH) and c:IsRace(RACE_MACHINE) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
 end
 
 -- Mục tiêu cho hiệu ứng triệu hồi đặc biệt từ bộ bài
