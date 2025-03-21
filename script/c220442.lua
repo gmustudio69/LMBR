@@ -16,7 +16,7 @@ function s.initial_effect(c)
     e0:SetRange(LOCATION_PZONE)
     e0:SetCategory(CATEGORY_SPECIAL_SUMMON)
     e0:SetProperty(EFFECT_FLAG_CARD_TARGET)
-    e0:SetCountLimit(1, id)
+    e0:SetCountLimit(1,id+o*1)
     e0:SetTarget(s.sptg)
     e0:SetOperation(s.spop)
     c:RegisterEffect(e0)
@@ -40,7 +40,7 @@ function s.initial_effect(c)
     e2:SetCode(EVENT_TO_HAND)
     e2:SetProperty(EFFECT_FLAG_DELAY)
     e2:SetRange(LOCATION_MZONE)
-    e2:SetCountLimit(1+id+o)
+    e2:SetCountLimit(2,id+o*2)
     e2:SetCondition(s.rmcon) -- Điều kiện: Khi có lá bài được thêm vào tay.
     e2:SetTarget(s.rmtg) -- Mục tiêu: Loại bỏ 1 lá bài ngẫu nhiên trên tay đối thủ.
     e2:SetOperation(s.rmop) -- Hành động: Thực hiện loại bỏ.
