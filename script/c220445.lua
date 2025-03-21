@@ -40,7 +40,7 @@ function s.initial_effect(c)
     e2:SetCode(EVENT_TO_GRAVE)
     e2:SetProperty(EFFECT_FLAG_DELAY)
     e2:SetRange(LOCATION_MZONE)
-    e2:SetCountLimit(1)
+    e2:SetCountLimit(1+id+o)
     e2:SetCondition(s.rmcon) -- Điều kiện: Lá bài được gửi xuống mộ của đối thủ.
     e2:SetTarget(s.rmtg) -- Mục tiêu: Loại bỏ các lá bài đó.
     e2:SetOperation(s.rmop) -- Hành động: Thực hiện loại bỏ.
