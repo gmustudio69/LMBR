@@ -3,6 +3,7 @@ local s,id,o=GetID()
 function s.initial_effect(c)
 	--Activate
 	local e1=Effect.CreateEffect(c)
+	e1:SetCategory(CATEGORY_TOHAND+CATEGORY_SEARCH)
 	e1:SetType(EFFECT_TYPE_ACTIVATE)
 	e1:SetCode(EVENT_FREE_CHAIN)
 	e1:SetCountLimit(1,id+EFFECT_COUNT_CODE_OATH)
@@ -14,13 +15,18 @@ function s.initial_effect(c)
 	e2:SetType(EFFECT_TYPE_IGNITION)
 	e2:SetRange(LOCATION_FZONE)
 	e2:SetCountLimit(1,id+o)
-	e2:SetCost(s.spcost)
 	e2:SetTarget(s.sptg)
 	e2:SetOperation(s.spop)
 	c:RegisterEffect(e2)
 end
 function s.filter(c)
 	return c:IsSetCard(0xb67) and c:IsType(TYPE_MONSTER) and not c:IsForbidden()
+end
+function s.spfilter(c,tp)
+	return c:IsType(TYPE_XYZ) and c:IsSetCard(0xf86)
+end
+function s.spfilter2(c,tp)
+	return c:IsRace(RACE_WARRIOR) and c:IsType(TYPE_MONSTER) and c:IsSetCard(0xf86)
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,nil)
@@ -43,37 +49,15 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 		tc:RegisterEffect(e1)
 	end
 end
-function s.cfilter(c,tp)
-	return c:IsType(TYPE_XYZ) and c:IsSetCard(0xf86) and Duel.IsExistingMatchingCard(s.cfilter2,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,nil,c)
-end
-function s.cfilter2(c,oc)
-	return c:IsLevel(oc:GetRank()) and c:IsSetCard(0xf86) and c:IsAttribute(oc:GetAttribute())
-end
-
-function s.spcost(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then
-		e:SetLabel(1)
-		return Duel.IsExistingMatchingCard(s.cfilter,tp,LOCATION_MZONE+LOCATION_GRAVE,0,1,nil,tp)
-	end
-	local g=Duel.SelectMatchingCard(tp,s.cfilter,tp,LOCATION_MZONE+LOCATION_GRAVE,0,1,1,nil,tp):GetFirst()
-	Duel.SendtoDeck(g,nil,SEQ_DECKSHUFFLE,REASON_COST)
-	e:SetLabelObject(g)
-end
 function s.sptg(e,tp,eg,ep,ev,re,r,rp,chk)
-	 if chk==0 then
-		local b=e:GetLabel()
-		e:SetLabel(0)
-		return b==1
-	end
-	e:GetLabelObject():CreateEffectRelation(e)
-	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_GRAVE+LOCATION_REMOVED)
+	if chk==0 then return Duel.IsExistingMatchingCard(s.spfilter2,tp,LOCATION_REMOVED+LOCATION_GRAVE,0,1,nil,e,tp) end
+	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_REMOVED+LOCATION_GRAVE)
 end
 function s.spop(e,tp,eg,ep,ev,re,r,rp)
-	local tc=e:GetLabelObject()
-	if not tc:IsRelateToEffect(e) then return end
+	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
 	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	local g=Duel.SelectMatchingCard(tp,s.cfilter2,tp,LOCATION_GRAVE+LOCATION_REMOVED,0,1,1,nil,tc)
-	if #g>0 then
+	local g=Duel.SelectMatchingCard(tp,s.spfilter2,tp,LOCATION_REMOVED+LOCATION_GRAVE,0,1,1,nil,e,tp)
+	if g:GetCount()>0 then
 		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
 	end
 end

@@ -12,7 +12,7 @@ function s.initial_effect(c)
 	c:RegisterEffect(e1)
 end
 function s.filter(c,e,tp,check)
-	return c:IsLevel(7) and (c:IsAttack(2400) or c:IsDefense(2400)) and c:IsAbleToHand()
+	return c:IsLevel(7) and (c:IsAttack(2400) or c:IsDefense(2400))
 end
 function s.cost(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(Card.IsDiscardable,tp,LOCATION_HAND,0,1,e:GetHandler()) end

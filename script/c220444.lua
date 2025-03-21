@@ -1,80 +1,121 @@
---Divine Arsenal G-4
-local s,id,o=GetID() -- Lấy ID của lá bài.
+-- Divine Arsenal G-4
+local s, id, o = GetID() -- Lấy ID của lá bài.
 
 function s.initial_effect(c)
-	-- Special summon từ tay hoặc mộ
-	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0))
-	e1:SetType(EFFECT_TYPE_FIELD)
-	e1:SetCode(EFFECT_SPSUMMON_PROC)
-	e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)
-	e1:SetRange(bit.bor(LOCATION_HAND,LOCATION_GRAVE)) -- Sử dụng bit.bor để kết hợp vị trí.
-	e1:SetCountLimit(1,id+EFFECT_COUNT_CODE_OATH)
-	e1:SetCondition(s.spcon)
-	c:RegisterEffect(e1)
+    c:SetUniqueOnField(1, 0, id) -- Chỉ cho phép 1 lá bài này trên sân.
 
-	-- Special summon từ bộ bài
-	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1))
-	e2:SetCategory(CATEGORY_SPECIAL_SUMMON)
-	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
-	e2:SetProperty(EFFECT_FLAG_DELAY)
-	e2:SetCode(bit.bor(EVENT_SUMMON_SUCCESS,EVENT_SPSUMMON_SUCCESS))
-	e2:SetCountLimit(1,id+o)
-	e2:SetTarget(s.sptg2)
-	e2:SetOperation(s.spop2)
-	c:RegisterEffect(e2)
+    -- Triệu hồi XYZ
+    aux.AddXyzProcedure(c, nil, 12, 1, nil, nil, 99) -- Sử dụng 1+ quái thú Level 12 để triệu hồi XYZ.
+    c:EnableReviveLimit() -- Giới hạn khả năng hồi sinh.
+    aux.EnablePendulumAttribute(c,false) -- Cho phép triệu hồi Pendulum.
+
+    -- Hiệu ứng 0: Triệu hồi đặc biệt từ Zone Pendulum
+    local e0 = Effect.CreateEffect(c)
+    e0:SetDescription(aux.Stringid(id, 1))
+    e0:SetType(EFFECT_TYPE_IGNITION)
+    e0:SetRange(LOCATION_PZONE)
+    e0:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    e0:SetProperty(EFFECT_FLAG_CARD_TARGET)
+    e0:SetCountLimit(1, id)
+    e0:SetTarget(s.sptg)
+    e0:SetOperation(s.spop)
+    c:RegisterEffect(e0)
+
+    -- Hiệu ứng 1: Triệu hồi đặc biệt từ Extra Deck
+    local e1 = Effect.CreateEffect(c)
+    e1:SetDescription(aux.Stringid(id, 0)) -- Mô tả hiệu ứng.
+    e1:SetType(EFFECT_TYPE_FIELD)
+    e1:SetCode(EFFECT_SPSUMMON_PROC)
+    e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)
+    e1:SetRange(LOCATION_EXTRA)
+    e1:SetCountLimit(1, id + EFFECT_COUNT_CODE_OATH)
+    e1:SetCondition(s.spcon)
+    c:RegisterEffect(e1)
+
+    -- Hiệu ứng 2: Xáo trộn các lá bài bị banish về Deck
+    local e2 = Effect.CreateEffect(c)
+    e2:SetDescription(aux.Stringid(id, 1)) -- Mô tả hiệu ứng.
+    e2:SetCategory(CATEGORY_TODECK)
+    e2:SetType(EFFECT_TYPE_FIELD + EFFECT_TYPE_TRIGGER_F)
+    e2:SetCode(EVENT_REMOVE)
+    e2:SetProperty(EFFECT_FLAG_DELAY)
+    e2:SetRange(LOCATION_MZONE)
+    e2:SetTarget(s.tdtg) -- Mục tiêu: Chọn các lá bài bị banish để xáo trộn về Deck.
+    e2:SetOperation(s.tdop) -- Hành động: Xáo trộn các lá bài bị banish về Deck.
+    c:RegisterEffect(e2)
+
+    -- Hiệu ứng 3: Giới hạn triệu hồi đặc biệt (chỉ cho phép quái thú tộc Máy)
+    local e4 = Effect.CreateEffect(c)
+    e4:SetType(EFFECT_TYPE_FIELD)
+    e4:SetRange(LOCATION_MZONE + LOCATION_GRAVE)
+    e4:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
+    e4:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+    e4:SetTargetRange(1, 0)
+    e4:SetTarget(s.splimit)
+    c:RegisterEffect(e4)
 end
 
--- Hàm lọc: kiểm tra lá bài thuộc bộ bài 0xd83 và đang ngửa mặt.
+-- Lọc quái thú Pendulum có thể triệu hồi đặc biệt
+function s.sptgfilter(c)
+    return (c:IsFaceup() or c:IsLocation(LOCATION_GRAVE)) and c:IsType(TYPE_PENDULUM) and not c:IsForbidden()
+end
+
+-- Mục tiêu của hiệu ứng triệu hồi đặc biệt từ Zone Pendulum
+function s.sptg(e, tp, eg, ep, ev, re, r, rp, chk, chkc)
+    if chkc then
+        return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE + LOCATION_GRAVE) and s.sptgfilter(chkc)
+    end
+    local c = e:GetHandler()
+    local tc = Duel.GetFirstMatchingCard(nil, tp, LOCATION_PZONE, 0, c)
+    if chk == 0 then
+        return tc and Duel.GetMZoneCount(tp) > 0 and tc:IsCanBeSpecialSummoned(e, 0, tp, false, false)
+            and Duel.IsExistingTarget(s.sptgfilter, tp, LOCATION_MZONE + LOCATION_GRAVE, 0, 1, nil)
+    end
+    Duel.Hint(HINT_SELECTMSG, tp, aux.Stringid(id, 4))
+    local g = Duel.SelectTarget(tp, s.sptgfilter, tp, LOCATION_MZONE + LOCATION_GRAVE, 0, 1, 1, nil)
+    Duel.SetOperationInfo(0, CATEGORY_SPECIAL_SUMMON, tc, 1, 0, 0)
+    if g:GetFirst():IsLocation(LOCATION_GRAVE) then
+        Duel.SetOperationInfo(0, CATEGORY_LEAVE_GRAVE, g, 1, 0, 0)
+    end
+end
+
+-- Hành động của hiệu ứng triệu hồi đặc biệt từ Zone Pendulum
+function s.spop(e, tp, eg, ep, ev, re, r, rp)
+    local c = e:GetHandler()
+    local tc = Duel.GetFirstMatchingCard(nil, tp, LOCATION_PZONE, 0, c)
+    local fc = Duel.GetFirstTarget()
+    if tc and Duel.GetMZoneCount(tp) > 0
+        and Duel.SpecialSummon(tc, 0, tp, tp, false, false, POS_FACEUP) > 0
+        and fc:IsRelateToEffect(e) then
+        Duel.MoveToField(fc, tp, tp, LOCATION_PZONE, POS_FACEUP, true)
+    end
+end
+
+-- Điều kiện triệu hồi đặc biệt từ Extra Deck
 function s.filter(c)
-	return c:IsSetCard(0xd83) and c:IsFaceup()
+    return c:IsCode(220448) and c:IsFaceup() -- Kiểm tra lá bài có ID 220448 (siêu cấp conti).
 end
 
--- Điều kiện triệu hồi đặc biệt
-function s.spcon(e,c)
-	if c==nil then return true end
-	local tp=c:GetControler()
-	return Duel.GetFieldGroupCount(tp,LOCATION_MZONE,0)==0 -- Không có quái thú trên sân.
-		or (Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_MZONE,0,1,nil) -- Có ít nhất 1 quái thú thuộc bộ bài 0xd83.
-		and Duel.GetLocationCount(tp,LOCATION_MZONE)>0) -- Có ô trống trên sân.
+function s.spcon(e, c)
+    if c == nil then return true end
+    local tp = c:GetControler()
+    return Duel.IsExistingMatchingCard(s.filter, tp, LOCATION_ONFIELD, 0, 1, nil) -- Kiểm tra có lá bài siêu cấp conti trên sân.
 end
 
--- Hàm lọc: kiểm tra lá bài hệ đất, tộc máy móc và có thể triệu hồi đặc biệt.
-function s.spfilter(c,e,tp)
-	return c:IsAttribute(ATTRIBUTE_EARTH) and c:IsRace(RACE_MACHINE) and c:IsCanBeSpecialSummoned(e,0,tp,false,false)
+-- Mục tiêu: Chọn các lá bài bị banish để xáo trộn về Deck
+function s.tdtg(e, tp, eg, ep, ev, re, r, rp, chk)
+    if chk == 0 then
+        return eg:IsExists(Card.IsAbleToDeck, 1, nil) -- Kiểm tra nếu có ít nhất 1 lá bài có thể xáo trộn về Deck.
+    end
+    Duel.SetOperationInfo(0, CATEGORY_TODECK, eg, eg:GetCount(), 0, 0) -- Thông báo cho người chơi xáo trộn các lá bài bị banish về Deck.
 end
 
--- Mục tiêu cho hiệu ứng triệu hồi đặc biệt từ bộ bài
-function s.sptg2(e,tp,eg,ep,ev,re,r,rp,chk)
-	if chk==0 then
-		return Duel.GetLocationCount(tp,LOCATION_MZONE)>0 -- Kiểm tra có ô trống trên sân.
-			and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_DECK,0,1,nil,e,tp) -- Có ít nhất 1 lá bài phù hợp trong bộ bài.
-	end
-	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_DECK)
+-- Hành động: Xáo trộn các lá bài bị banish về Deck
+function s.tdop(e, tp, eg, ep, ev, re, r, rp)
+    Duel.SendtoDeck(eg, nil, SEQ_DECKSHUFFLE, REASON_EFFECT)
 end
 
--- Hành động khi hiệu ứng được kích hoạt
-function s.spop2(e,tp,eg,ep,ev,re,r,rp)
-	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end -- Kiểm tra nếu không còn ô trống trên sân.
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
-	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_DECK,0,1,1,nil,e,tp) -- Người chơi chọn 1 lá bài phù hợp từ bộ bài.
-	if #g>0 then -- Kiểm tra nếu có lá bài được chọn.
-		Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP) -- Triệu hồi đặc biệt lá bài đó.
-
-		-- Thêm hạn chế triệu hồi đặc biệt (chỉ cho phép triệu hồi quái thú Machine)
-		local e1=Effect.CreateEffect(e:GetHandler())
-		e1:SetType(EFFECT_TYPE_FIELD)
-		e1:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
-		e1:SetProperty(EFFECT_FLAG_PLAYER_TARGET+EFFECT_FLAG_OATH)
-		e1:SetTargetRange(1,0)
-		e1:SetTarget(s.splimit)
-		e1:SetReset(RESET_PHASE+PHASE_END)
-		Duel.RegisterEffect(e1,tp)
-	end
-end
-
--- Hạn chế triệu hồi đặc biệt (chỉ cho phép triệu hồi quái thú Machine)
-function s.splimit(e,c,sump,sumtype,sumpos,targetp,se)
-	return not c:IsRace(RACE_MACHINE) -- Chỉ cho phép triệu hồi quái thú Machine.
+-- Giới hạn triệu hồi đặc biệt (chỉ quái thú tộc Máy)
+function s.splimit(e, c, sump, sumtype, sumpos, targetp, se)
+    return not c:IsRace(RACE_MACHINE)
 end

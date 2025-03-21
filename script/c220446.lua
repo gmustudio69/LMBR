@@ -1,121 +1,129 @@
 -- Divine Arsenal D-6
-local s,id,o=GetID() -- Lấy ID của lá bài.
+local s, id, o = GetID() -- Lấy ID của lá bài.
 
 function s.initial_effect(c)
-	-- Hiệu ứng triệu hồi Xyz
-	local e1=Effect.CreateEffect(c)
-	e1:SetDescription(aux.Stringid(id,0)) -- Mô tả hiệu ứng
-	e1:SetCategory(CATEGORY_SPECIAL_SUMMON) -- Loại hiệu ứng: Triệu hồi đặc biệt
-	e1:SetType(EFFECT_TYPE_QUICK_O) -- Hiệu ứng kích hoạt nhanh
-	e1:SetProperty(EFFECT_FLAG_CARD_TARGET) -- Hiệu ứng có mục tiêu
-	e1:SetRange(LOCATION_HAND) -- Kích hoạt từ tay
-	e1:SetCode(EVENT_FREE_CHAIN) -- Kích hoạt bất kỳ lúc nào
-	e1:SetCountLimit(1,id) -- Giới hạn số lần kích hoạt mỗi lượt
-	e1:SetHintTiming(0,TIMINGS_CHECK_MONSTER+TIMING_MAIN_END) -- Gợi ý thời điểm kích hoạt
-	e1:SetCondition(s.xyzcon) -- Điều kiện kích hoạt
-	e1:SetTarget(s.xyztg) -- Mục tiêu của hiệu ứng
-	e1:SetOperation(s.xyzop) -- Thực hiện hiệu ứng
-	c:RegisterEffect(e1)
+    c:SetUniqueOnField(1, 0, id) -- Chỉ cho phép 1 lá bài này trên sân.
 
-	-- Hiệu ứng thêm lá bài từ mộ vào tay
-	local e2=Effect.CreateEffect(c)
-	e2:SetDescription(aux.Stringid(id,1)) -- Mô tả hiệu ứng
-	e2:SetCategory(CATEGORY_TOHAND) -- Loại hiệu ứng: Thêm vào tay
-	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_TRIGGER_O) -- Hiệu ứng kích hoạt khi có điều kiện
-	e2:SetCode(EVENT_PHASE+PHASE_END) -- Kích hoạt vào cuối lượt
-	e2:SetRange(LOCATION_GRAVE) -- Kích hoạt từ mộ
-	e2:SetCountLimit(1,id+o*1) -- Giới hạn số lần kích hoạt mỗi lượt
-	e2:SetCondition(s.thcon) -- Điều kiện kích hoạt
-	e2:SetTarget(s.thtg) -- Mục tiêu của hiệu ứng
-	e2:SetOperation(s.thop) -- Thực hiện hiệu ứng
-	c:RegisterEffect(e2)
+    -- Triệu hồi XYZ
+    aux.AddXyzProcedure(c, nil, 12, 1, nil, nil, 99) -- Sử dụng 1+ quái thú Level 12 để triệu hồi XYZ.
+    c:EnableReviveLimit() -- Giới hạn khả năng hồi sinh.
+    aux.EnablePendulumAttribute(c, false) -- Cho phép triệu hồi Pendulum.
 
-	-- Kiểm tra toàn cục (global check) để theo dõi các lá bài được thêm vào tay
-	if not s.global_check then
-		s.global_check=true
-		local e0=Effect.CreateEffect(c)
-		e0:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS) -- Hiệu ứng liên tục
-		e0:SetCode(EVENT_TO_HAND) -- Kích hoạt khi lá bài được thêm vào tay
-		e0:SetOperation(s.regop) -- Thực hiện hiệu ứng
-		Duel.RegisterEffect(e0,0) -- Đăng ký hiệu ứng
-	end
+    -- Hiệu ứng 0: Triệu hồi đặc biệt từ Zone Pendulum
+    local e0 = Effect.CreateEffect(c)
+    e0:SetDescription(aux.Stringid(id, 1))
+    e0:SetType(EFFECT_TYPE_IGNITION)
+    e0:SetRange(LOCATION_PZONE)
+    e0:SetCategory(CATEGORY_SPECIAL_SUMMON)
+    e0:SetProperty(EFFECT_FLAG_CARD_TARGET)
+    e0:SetCountLimit(1, id)
+    e0:SetTarget(s.sptg)
+    e0:SetOperation(s.spop)
+    c:RegisterEffect(e0)
+
+    -- Hiệu ứng 1: Triệu hồi đặc biệt từ Extra Deck
+    local e1 = Effect.CreateEffect(c)
+    e1:SetDescription(aux.Stringid(id, 0)) -- Mô tả hiệu ứng.
+    e1:SetType(EFFECT_TYPE_FIELD)
+    e1:SetCode(EFFECT_SPSUMMON_PROC)
+    e1:SetProperty(EFFECT_FLAG_UNCOPYABLE)
+    e1:SetRange(LOCATION_EXTRA)
+    e1:SetCountLimit(1, id + EFFECT_COUNT_CODE_OATH)
+    e1:SetCondition(s.spcon)
+    c:RegisterEffect(e1)
+
+    -- Hiệu ứng 2: Phủ nhận kích hoạt hiệu ứng hoặc triệu hồi quái thú của đối thủ
+    local e2 = Effect.CreateEffect(c)
+    e2:SetDescription(aux.Stringid(id, 1)) -- Mô tả hiệu ứng.
+    e2:SetCategory(CATEGORY_NEGATE)
+    e2:SetType(EFFECT_TYPE_QUICK_F)
+    e2:SetCode(EVENT_CHAINING)
+    e2:SetProperty(EFFECT_FLAG_DAMAGE_STEP + EFFECT_FLAG_DAMAGE_CAL)
+    e2:SetRange(LOCATION_MZONE)
+    e2:SetCountLimit(1)
+    e2:SetCondition(s.discon)
+    e2:SetTarget(s.distg)
+    e2:SetOperation(s.disop)
+    c:RegisterEffect(e2)
+
+    -- Hiệu ứng 3: Giới hạn triệu hồi đặc biệt (chỉ cho phép quái thú tộc Máy)
+    local e4 = Effect.CreateEffect(c)
+    e4:SetType(EFFECT_TYPE_FIELD)
+    e4:SetRange(LOCATION_MZONE + LOCATION_GRAVE)
+    e4:SetCode(EFFECT_CANNOT_SPECIAL_SUMMON)
+    e4:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+    e4:SetTargetRange(1, 0)
+    e4:SetTarget(s.splimit)
+    c:RegisterEffect(e4)
 end
 
--- Điều kiện để kích hoạt hiệu ứng triệu hồi Xyz
-function s.xyzcon(e,tp,eg,ep,ev,re,r,rp)
-	local ph=Duel.GetCurrentPhase() -- Lấy giai đoạn hiện tại
-	return ph==PHASE_MAIN1 or ph==PHASE_MAIN2 -- Chỉ kích hoạt trong giai đoạn chính (cả lượt mình và lượt đối thủ)
+-- Lọc quái thú Pendulum có thể triệu hồi đặc biệt
+function s.sptgfilter(c)
+    return (c:IsFaceup() or c:IsLocation(LOCATION_GRAVE)) and c:IsType(TYPE_PENDULUM) and not c:IsForbidden()
 end
 
--- Bộ lọc để tìm các lá bài phù hợp cho triệu hồi Xyz
-function s.xyzfilter(c,tp,mc)
-	local mg=Group.FromCards(c,mc) -- Tạo nhóm gồm lá bài mục tiêu và lá bài hiện tại
-	return c:IsFaceup() and Duel.IsExistingMatchingCard(Card.IsXyzSummonable,tp,LOCATION_EXTRA,0,1,nil,mg) -- Kiểm tra xem có thể triệu hồi Xyz không
+-- Mục tiêu của hiệu ứng triệu hồi đặc biệt từ Zone Pendulum
+function s.sptg(e, tp, eg, ep, ev, re, r, rp, chk, chkc)
+    if chkc then
+        return chkc:IsControler(tp) and chkc:IsLocation(LOCATION_MZONE + LOCATION_GRAVE) and s.sptgfilter(chkc)
+    end
+    local c = e:GetHandler()
+    local tc = Duel.GetFirstMatchingCard(nil, tp, LOCATION_PZONE, 0, c)
+    if chk == 0 then
+        return tc and Duel.GetMZoneCount(tp) > 0 and tc:IsCanBeSpecialSummoned(e, 0, tp, false, false)
+            and Duel.IsExistingTarget(s.sptgfilter, tp, LOCATION_MZONE + LOCATION_GRAVE, 0, 1, nil)
+    end
+    Duel.Hint(HINT_SELECTMSG, tp, aux.Stringid(id, 4))
+    local g = Duel.SelectTarget(tp, s.sptgfilter, tp, LOCATION_MZONE + LOCATION_GRAVE, 0, 1, 1, nil)
+    Duel.SetOperationInfo(0, CATEGORY_SPECIAL_SUMMON, tc, 1, 0, 0)
+    if g:GetFirst():IsLocation(LOCATION_GRAVE) then
+        Duel.SetOperationInfo(0, CATEGORY_LEAVE_GRAVE, g, 1, 0, 0)
+    end
 end
 
--- Xác định mục tiêu cho hiệu ứng triệu hồi Xyz
-function s.xyztg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
-	local c=e:GetHandler() -- Lấy lá bài hiện tại
-	if chkc then return chkc:IsLocation(LOCATION_MZONE) and chkc:IsControler(tp) and s.xyzfilter(chkc,tp,c) end -- Kiểm tra mục tiêu hợp lệ
-	if chk==0 then
-		return Duel.IsPlayerCanSpecialSummonCount(tp,2) -- Kiểm tra xem người chơi có thể triệu hồi đặc biệt 2 lần không
-			and Duel.GetLocationCount(tp,LOCATION_MZONE)>0 -- Kiểm tra ô trống trên sân
-			and c:IsCanBeSpecialSummoned(e,0,tp,false,false) -- Kiểm tra xem lá bài có thể triệu hồi đặc biệt không
-			and Duel.IsExistingTarget(s.xyzfilter,tp,LOCATION_MZONE,0,1,nil,tp,c) -- Kiểm tra mục tiêu hợp lệ
-	end
-	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_FACEUP) -- Gợi ý chọn mục tiêu
-	Duel.SelectTarget(tp,s.xyzfilter,tp,LOCATION_MZONE,0,1,1,nil,tp,c) -- Chọn mục tiêu
-	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,c,1,tp,LOCATION_HAND) -- Đặt thông tin hiệu ứng
+-- Hành động của hiệu ứng triệu hồi đặc biệt từ Zone Pendulum
+function s.spop(e, tp, eg, ep, ev, re, r, rp)
+    local c = e:GetHandler()
+    local tc = Duel.GetFirstMatchingCard(nil, tp, LOCATION_PZONE, 0, c)
+    local fc = Duel.GetFirstTarget()
+    if tc and Duel.GetMZoneCount(tp) > 0
+        and Duel.SpecialSummon(tc, 0, tp, tp, false, false, POS_FACEUP) > 0
+        and fc:IsRelateToEffect(e) then
+        Duel.MoveToField(fc, tp, tp, LOCATION_PZONE, POS_FACEUP, true)
+    end
 end
 
--- Thực hiện hiệu ứng triệu hồi Xyz
-function s.xyzop(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler() -- Lấy lá bài hiện tại
-	if not c:IsRelateToEffect(e) or Duel.SpecialSummon(c,0,tp,tp,false,false,POS_FACEUP)==0 then return end -- Kiểm tra nếu không thể triệu hồi đặc biệt
-	local tc=Duel.GetFirstTarget() -- Lấy mục tiêu đầu tiên
-	if not tc or not tc:IsRelateToEffect(e) or tc:IsFacedown() or not tc:IsControler(tp) then return end -- Kiểm tra mục tiêu hợp lệ
-	Duel.AdjustAll() -- Điều chỉnh trạng thái trên sân
-	local mg=Group.FromCards(c,tc) -- Tạo nhóm lá bài để triệu hồi Xyz
-	if mg:FilterCount(Card.IsLocation,nil,LOCATION_MZONE)<2 then return end -- Kiểm tra số lượng lá bài trên sân
-	local g=Duel.GetMatchingGroup(Card.IsXyzSummonable,tp,LOCATION_EXTRA,0,nil,mg) -- Tìm các lá bài có thể triệu hồi Xyz
-	if #g>0 then
-		Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON) -- Gợi ý chọn lá bài
-		local sg=g:Select(tp,1,1,nil) -- Chọn lá bài để triệu hồi
-		Duel.XyzSummon(tp,sg:GetFirst(),mg) -- Triệu hồi Xyz
-	end
+-- Điều kiện triệu hồi đặc biệt từ Extra Deck
+function s.filter(c)
+    return c:IsCode(220448) and c:IsFaceup() -- Kiểm tra lá bài có ID 220448 (siêu cấp conti).
 end
 
--- Đăng ký hiệu ứng khi lá bài được thêm vào tay
-function s.regop(e,tp,eg,ep,ev,re,r,rp)
-	for p=0,1 do
-		if eg:IsExists(s.cfilter,1,nil,p) then -- Kiểm tra nếu có lá bài được thêm vào tay
-			Duel.RegisterFlagEffect(p,id,RESET_PHASE+PHASE_END,0,1) -- Đăng ký cờ hiệu
-		end
-	end
+function s.spcon(e, c)
+    if c == nil then return true end
+    local tp = c:GetControler()
+    return Duel.IsExistingMatchingCard(s.filter, tp, LOCATION_ONFIELD, 0, 1, nil) -- Kiểm tra có lá bài siêu cấp conti trên sân.
 end
 
--- Điều kiện để thêm lá bài từ mộ vào tay
-function s.thcon(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.IsExistingMatchingCard(s.thfilter,tp,LOCATION_ONFIELD,0,1,nil) -- Kiểm tra nếu có lá bài phù hợp trên sân
+-- Điều kiện kích hoạt hiệu ứng phủ nhận (chỉ từ đối thủ)
+function s.discon(e, tp, eg, ep, ev, re, r, rp)
+    return ep ~= tp and (re:IsHasType(EFFECT_TYPE_ACTIVATE) or re:IsActiveType(TYPE_MONSTER))
+        and re:GetHandler() ~= e:GetHandler()
 end
 
--- Bộ lọc để tìm lá bài phù hợp để thêm vào tay
-function s.thfilter(c)
-	return c:IsSetCard(0xd83) and c:IsType(TYPE_MONSTER) and c:IsFaceup() -- Kiểm tra lá bài thuộc bộ bài và là quái vật ngửa
+-- Mục tiêu của hiệu ứng phủ nhận
+function s.distg(e, tp, eg, ep, ev, re, r, rp, chk)
+    if chk == 0 then return true end
+    Duel.SetOperationInfo(0, CATEGORY_NEGATE, eg, 1, 0, 0)
 end
 
--- Xác định mục tiêu để thêm vào tay
-function s.thtg(e,tp,eg,ep,ev,re,r,rp,chk)
-	local c=e:GetHandler() -- Lấy lá bài hiện tại
-	if chk==0 then return c:IsAbleToHand() end -- Kiểm tra nếu lá bài có thể thêm vào tay
-	Duel.Hint(HINT_OPSELECTED,1-tp,e:GetDescription()) -- Hiển thị mô tả hiệu ứng
-	Duel.SetOperationInfo(0,CATEGORY_TOHAND,c,1,0,0) -- Đặt thông tin hiệu ứng
+-- Hành động của hiệu ứng phủ nhận
+function s.disop(e, tp, eg, ep, ev, re, r, rp)
+    if Duel.GetCurrentChain() == ev + 1 then
+        Duel.NegateActivation(ev)
+    end
 end
 
--- Thực hiện hiệu ứng thêm lá bài từ mộ vào tay
-function s.thop(e,tp,eg,ep,ev,re,r,rp)
-	local c=e:GetHandler() -- Lấy lá bài hiện tại
-	if c:IsRelateToEffect(e) then -- Kiểm tra nếu lá bài liên quan đến hiệu ứng
-		Duel.SendtoHand(c,nil,REASON_EFFECT) -- Thêm lá bài vào tay
-	end
+-- Giới hạn triệu hồi đặc biệt (chỉ quái thú tộc Máy)
+function s.splimit(e, c, sump, sumtype, sumpos, targetp, se)
+    return not c:IsRace(RACE_MACHINE)
 end
