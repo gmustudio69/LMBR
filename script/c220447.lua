@@ -6,4 +6,5 @@ function s.initial_effect(c)
     --link summon
     c:EnableReviveLimit()
     aux.AddLinkProcedure(c,aux.FilterBoolFunction(Card.IsLinkType,TYPE_EFFECT),6) -- Gắn điều kiện link summon.
+    
 end
