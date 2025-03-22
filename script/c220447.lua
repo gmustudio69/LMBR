@@ -6,7 +6,7 @@ function s.initial_effect(c)
 	c:SetUniqueOnField(1, 0, id)
 
 	-- Triệu hồi XYZ yêu cầu 6 quái Rank 12 làm nguyên liệu
-	aux.AddXyzProcedure(c, nil, 12, 6, s.ovfilter, aux.Stringid(id, 0), nil, s.xyzop)
+	aux.AddXyzProcedure(c, nil, 12, 6, s.ovfilter, nil, nil, s.xyzop)
 	c:EnableReviveLimit()
 
 	-- Giới hạn triệu hồi đặc biệt (chỉ cho phép XYZ Summon)
@@ -17,37 +17,20 @@ function s.initial_effect(c)
 	e0:SetValue(aux.xyzlimit)
 	c:RegisterEffect(e0)
 
-	-- Không thể bị Tribute
+	-- Gain effect của tất cả XYZ Material
 	local e1 = Effect.CreateEffect(c)
-	e1:SetType(EFFECT_TYPE_SINGLE)
-	e1:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
-	e1:SetRange(LOCATION_MZONE)
-	e1:SetCode(EFFECT_UNRELEASABLE_SUM)
-	e1:SetValue(1)
+	e1:SetType(EFFECT_TYPE_SINGLE + EFFECT_TYPE_CONTINUOUS)
+	e1:SetCode(EVENT_SPSUMMON_SUCCESS)
+	e1:SetCondition(s.copy_condition)
+	e1:SetOperation(s.copy_effect)
 	c:RegisterEffect(e1)
 
-	-- Không thể bị Take Control
-	local e2 = Effect.CreateEffect(c)
-	e2:SetType(EFFECT_TYPE_SINGLE)
-	e2:SetProperty(EFFECT_FLAG_SINGLE_RANGE)
-	e2:SetRange(LOCATION_MZONE)
-	e2:SetCode(EFFECT_CANNOT_CHANGE_CONTROL)
-	c:RegisterEffect(e2)
-
-	-- Gain effect của tất cả XYZ Material
-	local e3 = Effect.CreateEffect(c)
-	e3:SetType(EFFECT_TYPE_SINGLE + EFFECT_TYPE_CONTINUOUS)
-	e3:SetCode(EVENT_SPSUMMON_SUCCESS)
-	e3:SetCondition(s.copy_condition)
-	e3:SetOperation(s.copy_effect)
-	c:RegisterEffect(e3)
-
 	-- Reset hiệu ứng khi rời sân
-	local e4 = Effect.CreateEffect(c)
-	e4:SetType(EFFECT_TYPE_SINGLE + EFFECT_TYPE_CONTINUOUS)
-	e4:SetCode(EVENT_LEAVE_FIELD)
-	e4:SetOperation(s.reset_effect)
-	c:RegisterEffect(e4)
+	local e2 = Effect.CreateEffect(c)
+	e2:SetType(EFFECT_TYPE_SINGLE + EFFECT_TYPE_CONTINUOUS)
+	e2:SetCode(EVENT_LEAVE_FIELD)
+	e2:SetOperation(s.reset_effect)
+	c:RegisterEffect(e2)
 end
 
 -- Chỉ cho phép triệu hồi từ 6 quái Rank 12
