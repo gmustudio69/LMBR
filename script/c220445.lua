@@ -36,7 +36,6 @@ function s.initial_effect(c)
 	e2:SetCode(EVENT_TO_GRAVE)
 	e2:SetProperty(EFFECT_FLAG_DELAY)
 	e2:SetRange(LOCATION_MZONE)
-	e2:SetCondition(s.rmcon)
 	e2:SetTarget(s.rmtg)
 	e2:SetOperation(s.rmop)
 	c:RegisterEffect(e2)
@@ -61,11 +60,6 @@ function s.spcon(e, c)
 	if c == nil then return true end
 	local tp = c:GetControler()
 	return Duel.IsExistingMatchingCard(s.filter, tp, LOCATION_ONFIELD, 0, 1, nil)
-end
-
--- Điều kiện: Lá bài được gửi xuống mộ của đối thủ.
-function s.rmcon(e, tp, eg, ep, ev, re, r, rp)
-	return eg:IsExists(Card.IsControler, 1, nil, 1 - tp)
 end
 
 -- Mục tiêu: Loại bỏ các lá bài đó.
