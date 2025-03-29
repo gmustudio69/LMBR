@@ -2,7 +2,7 @@
 local s,id,o=GetID()
 function s.initial_effect(c)
 	--xyz summon
-	aux.AddXyzProcedure(c,nil,7,2,s.ovfilter,aux.Stringid(id,0))
+	aux.AddXyzProcedure(c,nil,7,2,s.ovfilter,aux.Stringid(id,0),2,s.xyzop)
 	c:EnableReviveLimit()
 	local e1=Effect.CreateEffect(c)
 	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
@@ -24,11 +24,14 @@ function s.chainfilter(re,tp,cid)
 	return not rc:IsCode(220406)
 end
 function s.ovfilter(c)
-	local g=Duel.GetMatchingGroup(Card.IsAttribute(ATTRIBUTE_LIGHT),tp,LOCATION_MZONE,0,nil):GetMaxGroup(Card.GetAttack)
-	return c:IsFaceup() and g and #g>0 and g:IsContains(c)
+	return c:IsFaceup() and c:IsType(TYPE_XYZ) and c:IsAttribute(ATTRIBUTE_LIGHT)
 end
 function s.spfilter(c,e,tp)
 	return c:IsLevel(7) and c:IsRace(RACE_WARRIOR)
+end
+function s.xyzop(e,tp,chk)
+	if chk==0 then return Duel.GetFlagEffect(tp,id)==0 and (Duel.GetCustomActivityCount(id,tp,ACTIVITY_CHAIN)>0 or Duel.GetCustomActivityCount(id,1-tp,ACTIVITY_CHAIN)>0) end
+	Duel.RegisterFlagEffect(tp,id,RESET_PHASE+PHASE_END,EFFECT_FLAG_OATH,1)
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.GetMZoneCount(tp,e:GetHandler())>0

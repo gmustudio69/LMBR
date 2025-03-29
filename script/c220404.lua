@@ -37,6 +37,7 @@ function s.initial_effect(c)
 	e4:SetCondition(s.qcon)
 	e4:SetCode(EVENT_CHAINING)
 	c:RegisterEffect(e4)
+	--
 	Duel.AddCustomActivityCounter(id,ACTIVITY_CHAIN,s.chainfilter)
 end
 function s.chainfilter(re,tp,cid)

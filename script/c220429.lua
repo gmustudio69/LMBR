@@ -61,7 +61,7 @@ function s.tdtg(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then
 		if Duel.GetFieldGroupCount(tp,LOCATION_DECK,0)<3 then return false end
 		local g=Duel.GetDecktopGroup(tp,3)
-		local result=g:FilterCount(Card.IsAbleToHand,nil)>0
+		local result=g:FilterCount(Card.IsAbleToGrave,nil)>0
 		return result
 	end
 	Duel.SetTargetPlayer(tp)

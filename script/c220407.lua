@@ -75,5 +75,5 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 	end
 end
 function s.setcon(e,tp,eg,ep,ev,re,r,rp)
-	return Duel.GetFieldGroupCount(tp,0,LOCATION_MZONE)>0
+	return Duel.GetFieldGroupCount(1-tp,0,LOCATION_MZONE)>0
 end
