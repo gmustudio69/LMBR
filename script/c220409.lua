@@ -51,6 +51,10 @@ function s.spop(e,tp,eg,ep,ev,re,r,rp)
 		end
 	end
 end
+function s.sfilter(c,e,tp)
+	return c:GetOriginalType()&TYPE_MONSTER>0 and c:GetType()&TYPE_CONTINUOUS+TYPE_SPELL==TYPE_CONTINUOUS+TYPE_SPELL
+		and c:IsFaceup() and c:IsSetCard(0xb67)
+end
 function s.spstg(e,tp,eg,ep,ev,re,r,rp,chk,chkc)
 	if chkc then return chkc:IsOnField() and s.sfilter(chkc,e,tp) end
 	if chk==0 then return Duel.GetLocationCount(tp,LOCATION_MZONE)>0

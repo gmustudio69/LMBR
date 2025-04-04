@@ -13,18 +13,12 @@ function s.initial_effect(c)
 	local e2=Effect.CreateEffect(c)
 	e2:SetType(EFFECT_TYPE_FIELD+EFFECT_TYPE_CONTINUOUS)
 	e2:SetCode(EVENT_CHAINING)
-	e2:SetRange(LOCATION_MZONE)
+	e2:SetRange(LOCATION_FZONE)
 	e2:SetOperation(s.chainop)
 	c:RegisterEffect(e2)
 end
 function s.filter(c)
 	return c:IsSetCard(0xb67) and c:IsType(TYPE_MONSTER) and not c:IsForbidden()
-end
-function s.spfilter(c,tp)
-	return c:IsType(TYPE_XYZ) and c:IsSetCard(0xf86)
-end
-function s.spfilter2(c,tp)
-	return c:IsRace(RACE_WARRIOR) and c:IsType(TYPE_MONSTER) and c:IsSetCard(0xf86)
 end
 function s.target(e,tp,eg,ep,ev,re,r,rp,chk)
 	if chk==0 then return Duel.IsExistingMatchingCard(s.filter,tp,LOCATION_DECK,0,1,nil)
@@ -45,9 +39,27 @@ function s.activate(e,tp,eg,ep,ev,re,r,rp)
 		e1:SetReset(RESET_EVENT+RESETS_STANDARD-RESET_TURN_SET)
 		e1:SetValue(TYPE_SPELL+TYPE_CONTINUOUS)
 		tc:RegisterEffect(e1)
+		local e2=Effect.CreateEffect(e:GetHandler())
+		e2:SetType(EFFECT_TYPE_FIELD)
+		e2:SetCode(EFFECT_CANNOT_ACTIVATE)
+		e2:SetProperty(EFFECT_FLAG_PLAYER_TARGET)
+		e2:SetTargetRange(1,0)
+		e2:SetLabel(tc:GetOriginalCodeRule())
+		e2:SetCondition(s.aclimitcon)
+		e2:SetTarget(s.aclimit)
+		e2:SetReset(RESET_PHASE+PHASE_END)
+		Duel.RegisterEffect(e2,tp)
 	end
 end
-
+function s.filter2(c,e)
+	return c:IsOriginalCodeRule(e:GetLabel()) and c:IsFaceup()
+end
+function s.aclimit(e,re,tp)
+	return re:IsActiveType(TYPE_MONSTER) and not re:GetHandler():IsRace(RACE_WARRIOR+RACE_PSYCHO)
+end
+function s.aclimitcon(e)
+	return Duel.IsExistingMatchingCard(s.filter2,e:GetHandlerPlayer(),LOCATION_ONFIELD,0,1,nil,e)
+end
 function s.chainop(e,tp,eg,ep,ev,re,r,rp)
 	if re:GetHandler():IsCode(220406) then
 		Duel.SetChainLimit(s.chainlm)
