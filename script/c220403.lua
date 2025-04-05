@@ -20,7 +20,7 @@ function s.initial_effect(c)
 	local e2=Effect.CreateEffect(c)
 	e2:SetDescription(aux.Stringid(id,1))
 	e2:SetType(EFFECT_TYPE_SINGLE+EFFECT_TYPE_TRIGGER_O)
-	e2:SetCode(EVENT_LEAVE_FIELD)
+	e2:SetCode(EVENT_TO_GRAVE)
 	e2:SetProperty(EFFECT_FLAG_DELAY)
 	e2:SetCountLimit(1,id+o)
 	e2:SetTarget(s.settg)
@@ -54,7 +54,7 @@ function s.excop(e,tp,eg,ep,ev,re,r,rp)
 	if not g or #g<3 then return end
 	g=g:Filter(s.tdfilter,nil)
 	local ct=3
-	if #g>0 and Duel.SelectYesNo(p,aux.Stringid(id,2)) then
+	if #g>0 and Duel.SelectYesNo(p,aux.Stringid(id,0)) then
 		Duel.Hint(HINT_SELECTMSG,p,HINTMSG_TOGRAVE)
 		local sg=g:Select(p,1,1,nil)
 		Duel.DisableShuffleCheck()

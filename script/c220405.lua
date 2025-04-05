@@ -2,6 +2,7 @@
 --Ellie,The Chaos Child
 local s,id,o=GetID()
 function s.initial_effect(c)
+	c:SetUniqueOnField(1,0,220405)
 	c:EnableReviveLimit()
 	--splimit
 	local e0=Effect.CreateEffect(c)
