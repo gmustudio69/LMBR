@@ -1,0 +1,47 @@
+--Limit Breaker
+local s,id,o=GetID()
+function s.initial_effect(c)
+	--xyz summon
+	aux.AddXyzProcedure(c,nil,7,2,s.ovfilter,aux.Stringid(id,0),2,s.xyzop)
+	c:EnableReviveLimit()
+	local e1=Effect.CreateEffect(c)
+	e1:SetCategory(CATEGORY_SPECIAL_SUMMON)
+	e1:SetType(EFFECT_TYPE_IGNITION)
+	e1:SetRange(LOCATION_MZONE)
+	e1:SetCountLimit(1,id+o)
+	e1:SetCost(s.sscost)
+	e1:SetTarget(s.sstg)
+	e1:SetOperation(s.ssop)
+	c:RegisterEffect(e1)
+	Duel.AddCustomActivityCounter(id,ACTIVITY_CHAIN,s.chainfilter)
+end
+function s.chainfilter(re,tp,cid)
+	local rc=re:GetHandler()
+	return not rc:IsCode(220406)
+end
+function s.ovfilter(c)
+	return c:IsFaceup() and c:IsType(TYPE_XYZ) and c:IsAttribute(ATTRIBUTE_LIGHT)
+end
+function s.spfilter(c,e,tp)
+	return c:IsLevel(7) and c:IsRace(RACE_WARRIOR)
+end
+function s.xyzop(e,tp,chk)
+	if chk==0 then return Duel.GetFlagEffect(tp,id)==0 and (Duel.GetCustomActivityCount(id,tp,ACTIVITY_CHAIN)>0 or Duel.GetCustomActivityCount(id,1-tp,ACTIVITY_CHAIN)>0) end
+	Duel.RegisterFlagEffect(tp,id,RESET_PHASE+PHASE_END,EFFECT_FLAG_OATH,1)
+end
+function s.sstg(e,tp,eg,ep,ev,re,r,rp,chk)
+	if chk==0 then return Duel.GetMZoneCount(tp,e:GetHandler())>0
+		and Duel.IsExistingMatchingCard(s.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,nil,e,tp) end
+	Duel.SetOperationInfo(0,CATEGORY_SPECIAL_SUMMON,nil,1,tp,LOCATION_HAND+LOCATION_DECK)
+end
+function s.sscost(e,tp,eg,ep,ev,re,r,rp,chk)
+	local c=e:GetHandler()
+	if chk==0 then return c:CheckRemoveOverlayCard(tp,1,REASON_COST) end
+	c:RemoveOverlayCard(tp,1,1,REASON_COST)
+end
+function s.ssop(e,tp,eg,ep,ev,re,r,rp)
+	if Duel.GetLocationCount(tp,LOCATION_MZONE)<=0 then return end
+	Duel.Hint(HINT_SELECTMSG,tp,HINTMSG_SPSUMMON)
+	local g=Duel.SelectMatchingCard(tp,s.spfilter,tp,LOCATION_HAND+LOCATION_DECK,0,1,1,nil,e,tp)
+	Duel.SpecialSummon(g,0,tp,tp,false,false,POS_FACEUP)
+end
